@@ -1,3 +1,5 @@
+const TILE_BUST = Date.now().toString();
+
 const CONFIG = {
   center: [-103.31388, 29.21967],
   zoom: 11,
@@ -12,9 +14,8 @@ const CONFIG = {
     watersheds: "./data/watersheds_adjacent.geojson"
   },
 
-  // Bump the version string when you republish raster tiles
-  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png?v=20260321e",
-  lightTiles: "./tiles/light_from_wall/{z}/{x}/{y}.png?v=20260321e"
+  viewshedTiles: `./tiles/viewshed/{z}/{x}/{y}.png?v=${TILE_BUST}`,
+  lightTiles: `./tiles/light_from_wall/{z}/{x}/{y}.png?v=${TILE_BUST}`
 };
 
 const state = {
