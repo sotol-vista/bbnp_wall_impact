@@ -4,11 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Fence Impact Viewer</title>
-
+  <link rel="icon" href="data:,">
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css" />
 </head>
-  <link rel="icon" href="data:,">
 <body>
   <div id="app">
     <aside id="sidebar-left">
@@ -16,7 +15,7 @@
         <h1>Fence Impact Viewer</h1>
         <p class="subtle">
           Explore proposed wall segments and their potential effects on flooding,
-          riparian habitat, crossings, visitor experience, and wall visibility.
+          riparian habitat, crossings, visitor experience, wall visibility, and light exposure.
         </p>
       </div>
 
@@ -49,15 +48,22 @@
         <label class="checkrow"><input type="checkbox" id="togglePOI" checked /> Points of interest</label>
         <label class="checkrow"><input type="checkbox" id="toggleCrossings" checked /> Potential crossings</label>
         <label class="checkrow"><input type="checkbox" id="toggleViewshed" checked /> Viewshed raster</label>
+        <label class="checkrow"><input type="checkbox" id="toggleLightFromWall" /> Light from wall</label>
       </div>
 
       <div class="panel-section">
         <label for="viewshedOpacity"><strong>Viewshed opacity</strong></label>
-        <input id="viewshedOpacity" type="range" min="0" max="1" step="0.05" value="0.55" />
+        <input id="viewshedOpacity" type="range" min="0" max="1" step="0.05" value="0.45" />
+      </div>
+
+      <div class="panel-section">
+        <label for="lightOpacity"><strong>Light layer opacity</strong></label>
+        <input id="lightOpacity" type="range" min="0" max="1" step="0.05" value="0.45" />
       </div>
 
       <div class="panel-section">
         <strong>Legend</strong>
+
         <div class="legend-group">
           <div class="legend-title">Wall segment rank</div>
           <div class="legend-item"><span class="swatch swatch-low"></span> Low</div>
@@ -72,6 +78,12 @@
           <div class="legend-item"><span class="poi-symbol poi-camp"></span> CAMP</div>
           <div class="legend-item"><span class="poi-symbol poi-trib"></span> TRIB</div>
           <div class="legend-item"><span class="poi-symbol poi-rafting"></span> RAFTING</div>
+        </div>
+
+        <div class="legend-group">
+          <div class="legend-title">Raster overlays</div>
+          <div class="legend-item"><span class="raster-swatch raster-viewshed"></span> Viewshed (orange to red)</div>
+          <div class="legend-item"><span class="raster-swatch raster-light"></span> Light from wall (dark blue to yellow)</div>
         </div>
       </div>
     </aside>
@@ -98,7 +110,8 @@
         <p class="subtle">
           The wall is symbolized by the selected rank field. Watershed boundaries are shown
           in dark grey for context. Points of interest use colored triangles by type.
-          The viewshed raster shows where the wall may be visible.
+          The viewshed overlay shows where the wall may be visible, and the light layer
+          shows the potential visibility or intensity of light associated with the proposed wall.
         </p>
       </div>
     </aside>

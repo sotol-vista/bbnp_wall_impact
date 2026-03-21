@@ -219,3 +219,18 @@ input[type="range"] {
     min-height: 60vh;
   }
 }
+.raster-swatch {
+  width: 28px;
+  height: 12px;
+  border-radius: 999px;
+  display: inline-block;
+  border: 1px solid #ccc;
+}
+
+.raster-viewshed {
+  background: linear-gradient(to right, #fdbb84, #ef6548, #990000);
+}
+
+.raster-light {
+  background: linear-gradient(to right, #0a1450, #4f8dd8, #fff000);
+}

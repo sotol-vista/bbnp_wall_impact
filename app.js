@@ -12,7 +12,8 @@ const CONFIG = {
     watersheds: "./data/watersheds_adjacent.geojson"
   },
 
-  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png"
+  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png",
+  lightTiles: "./tiles/light_from_wall/{z}/{x}/{y}.png"
 };
 
 const state = {
@@ -60,6 +61,13 @@ const map = new maplibregl.Map({
         tileSize: 256,
         minzoom: 10,
         maxzoom: 14
+      },
+      lightFromWall: {
+        type: "raster",
+        tiles: [CONFIG.lightTiles],
+        tileSize: 256,
+        minzoom: 10,
+        maxzoom: 14
       }
     },
     layers: [
@@ -77,7 +85,17 @@ const map = new maplibregl.Map({
           "raster-opacity": 0.55
         }
       },
-
+      {
+        id: "light-from-wall",
+        type: "raster",
+        source: "lightFromWall",
+        paint: {
+          "raster-opacity": 0.45
+        },
+        layout: {
+          visibility: "none"
+        }
+      },
       {
         id: "watersheds-line",
         type: "line",
