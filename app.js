@@ -13,8 +13,8 @@ const CONFIG = {
   },
 
   // Bump the version string when you republish raster tiles
-  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png?v=20260321d",
-  lightTiles: "./tiles/light_from_wall/{z}/{x}/{y}.png?v=20260321d"
+  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png?v=20260321e",
+  lightTiles: "./tiles/light_from_wall/{z}/{x}/{y}.png?v=20260321e"
 };
 
 const state = {
