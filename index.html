@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fence Impact Viewer</title>
+
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar-left">
+      <div class="panel-section">
+        <h1>Fence Impact Viewer</h1>
+        <p class="subtle">
+          Explore proposed wall segments and their potential effects on flooding,
+          riparian habitat, crossings, visitor experience, and wall visibility.
+        </p>
+      </div>
+
+      <div class="panel-section">
+        <label for="rankField"><strong>Segment coloring</strong></label>
+        <select id="rankField">
+          <option value="RO_Rank" selected>Runoff / erosion-flooding rank</option>
+          <option value="Riparian_Rank">Riparian habitat rank</option>
+        </select>
+      </div>
+
+      <div class="panel-section">
+        <label for="segmentSearch"><strong>Find segment or watershed</strong></label>
+        <input id="segmentSearch" type="text" placeholder="Search ID or watershed name" />
+      </div>
+
+      <div class="panel-section">
+        <strong>Quick filters</strong>
+        <label class="checkrow">
+          <input type="checkbox" id="filterVisiblePOI" />
+          Only POIs where wall is visible
+        </label>
+      </div>
+
+      <div class="panel-section">
+        <strong>Layers</strong>
+        <label class="checkrow"><input type="checkbox" id="toggleWatersheds" checked /> Watershed boundaries</label>
+        <label class="checkrow"><input type="checkbox" id="toggleRiparian" checked /> Riparian corridor</label>
+        <label class="checkrow"><input type="checkbox" id="toggleWall" checked /> Proposed wall</label>
+        <label class="checkrow"><input type="checkbox" id="togglePOI" checked /> Points of interest</label>
+        <label class="checkrow"><input type="checkbox" id="toggleCrossings" checked /> Potential crossings</label>
+        <label class="checkrow"><input type="checkbox" id="toggleViewshed" checked /> Viewshed raster</label>
+      </div>
+
+      <div class="panel-section">
+        <label for="viewshedOpacity"><strong>Viewshed opacity</strong></label>
+        <input id="viewshedOpacity" type="range" min="0" max="1" step="0.05" value="0.55" />
+      </div>
+
+      <div class="panel-section">
+        <strong>Legend</strong>
+        <div class="legend-group">
+          <div class="legend-title">Wall segment rank</div>
+          <div class="legend-item"><span class="swatch swatch-low"></span> Low</div>
+          <div class="legend-item"><span class="swatch swatch-med"></span> Medium</div>
+          <div class="legend-item"><span class="swatch swatch-high"></span> High</div>
+        </div>
+
+        <div class="legend-group">
+          <div class="legend-title">POI type</div>
+          <div class="legend-item"><span class="poi-symbol poi-poi"></span> POI</div>
+          <div class="legend-item"><span class="poi-symbol poi-th"></span> TH</div>
+          <div class="legend-item"><span class="poi-symbol poi-camp"></span> CAMP</div>
+          <div class="legend-item"><span class="poi-symbol poi-trib"></span> TRIB</div>
+          <div class="legend-item"><span class="poi-symbol poi-rafting"></span> RAFTING</div>
+        </div>
+      </div>
+    </aside>
+
+    <main id="map"></main>
+
+    <aside id="sidebar-right">
+      <div class="panel-section">
+        <h2>Impact Card</h2>
+        <div id="impactCard" class="impact-card empty">
+          Click a wall segment to inspect its attributes.
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>POI Summary</h2>
+        <div id="poiSummary" class="summary-box">
+          Loading…
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>How to read this</h2>
+        <p class="subtle">
+          The wall is symbolized by the selected rank field. Watershed boundaries are shown
+          in dark grey for context. Points of interest use colored triangles by type.
+          The viewshed raster shows where the wall may be visible.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
