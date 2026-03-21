@@ -146,18 +146,6 @@ const map = new maplibregl.Map({
           "circle-stroke-width": 1.2
         }
       },
-
-      {
-        id: "poi-triangle-poi",
-        type: "symbol",
-        source: "poi",
-        filter: ["==", ["get", "Type"], "POI"],
-        layout: {
-          "icon-image": "triangle-poi",
-          "icon-size": 1,
-          "icon-allow-overlap": true
-        }
-      },
       {
         id: "poi-triangle-th",
         type: "symbol",
@@ -214,15 +202,39 @@ map.addControl(new maplibregl.NavigationControl(), "top-right");
 
 map.on("load", async () => {
   addTriangleIcons();
+  addPoiLayers();
 
   wireUi();
-
   await fitToWall();
 
   updateWallColoring();
   updatePoiSummary();
   addInteractions();
 });
+
+function addPoiLayers() {
+  const poiLayerDefs = [
+    { id: "poi-triangle-poi", typeValue: "POI", icon: "triangle-poi" },
+    { id: "poi-triangle-th", typeValue: "TH", icon: "triangle-th" },
+    { id: "poi-triangle-camp", typeValue: "CAMP", icon: "triangle-camp" },
+    { id: "poi-triangle-trib", typeValue: "TRIB", icon: "triangle-trib" },
+    { id: "poi-triangle-rafting", typeValue: "RAFTING", icon: "triangle-rafting" }
+  ];
+
+  poiLayerDefs.forEach(def => {
+    map.addLayer({
+      id: def.id,
+      type: "symbol",
+      source: "poi",
+      filter: ["==", ["get", "Type"], def.typeValue],
+      layout: {
+        "icon-image": def.icon,
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      }
+    });
+  });
+}
 
 function addTriangleIcons() {
   const colors = {
