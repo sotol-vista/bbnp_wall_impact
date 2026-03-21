@@ -57,7 +57,9 @@ const map = new maplibregl.Map({
       viewshed: {
         type: "raster",
         tiles: [CONFIG.viewshedTiles],
-        tileSize: 256
+        tileSize: 256,
+        minzoom: 10,
+        maxzoom: 14
       }
     },
     layers: [
@@ -114,10 +116,12 @@ const map = new maplibregl.Map({
         source: "wall",
         paint: {
           "line-color": [
-            "case",
-            ["<=", ["to-number", ["coalesce", ["get", "RO_Rank"], 0]], 1], "#f1c40f",
-            ["==", ["to-number", ["coalesce", ["get", "RO_Rank"], 0]], 2], "#e67e22",
-            "#c0392b"
+            "match",
+            ["downcase", ["to-string", ["coalesce", ["get", "RO_Rank"], ""]]],
+            "low", "#f1c40f",
+            "medium", "#e67e22",
+            "high", "#c0392b",
+            "#888888"
           ],
           "line-width": 4
         }
@@ -451,24 +455,20 @@ function selectWallFeature(feature) {
 }
 
 function buildSegmentNarrative(properties) {
-  const ro = toNumber(properties.RO_Rank);
-  const rip = toNumber(properties.Riparian_Rank);
+  const ro = String(properties.RO_Rank ?? "").toLowerCase();
+  const rip = String(properties.Riparian_Rank ?? "").toLowerCase();
 
   const parts = [];
 
-  if (!isNaN(ro)) {
-    if (ro >= 3) parts.push("This segment ranks high for runoff-related erosion or flooding concerns.");
-    else if (ro === 2) parts.push("This segment shows moderate runoff-related concern.");
-    else parts.push("This segment shows relatively low runoff-related concern.");
-  }
+  if (ro === "high") parts.push("This segment ranks high for runoff-related erosion or flooding concerns.");
+  else if (ro === "medium") parts.push("This segment shows moderate runoff-related concern.");
+  else if (ro === "low") parts.push("This segment shows relatively low runoff-related concern.");
 
-  if (!isNaN(rip)) {
-    if (rip >= 3) parts.push("Riparian habitat sensitivity is high here.");
-    else if (rip === 2) parts.push("Riparian habitat sensitivity is moderate here.");
-    else parts.push("Riparian habitat sensitivity is relatively low here.");
-  }
+  if (rip === "high") parts.push("Riparian habitat sensitivity is high here.");
+  else if (rip === "medium") parts.push("Riparian habitat sensitivity is moderate here.");
+  else if (rip === "low") parts.push("Riparian habitat sensitivity is relatively low here.");
 
-  if (parts.length === 0) {
+  if (!parts.length) {
     return "Use the map context, watershed boundaries, crossings, POIs, and viewshed overlay to evaluate this segment.";
   }
 
@@ -479,10 +479,12 @@ function updateWallColoring() {
   const field = state.rankField;
 
   map.setPaintProperty("wall-line", "line-color", [
-    "case",
-    ["<=", ["to-number", ["coalesce", ["get", field], 0]], 1], "#f1c40f",
-    ["==", ["to-number", ["coalesce", ["get", field], 0]], 2], "#e67e22",
-    "#c0392b"
+    "match",
+    ["downcase", ["to-string", ["coalesce", ["get", field], ""]]],
+    "low", "#f1c40f",
+    "medium", "#e67e22",
+    "high", "#c0392b",
+    "#888888"
   ]);
 }
 
