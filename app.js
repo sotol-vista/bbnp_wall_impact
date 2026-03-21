@@ -1,6 +1,6 @@
 const CONFIG = {
-  center: [-103.31388, 29.21967],   // replace with your project center
-  zoom: 11,                  // replace as needed
+  center: [-103.31388, 29.21967],
+  zoom: 11,
   maxZoom: 17,
   minZoom: 8,
 
@@ -12,8 +12,9 @@ const CONFIG = {
     watersheds: "./data/watersheds_adjacent.geojson"
   },
 
-  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png",
-  lightTiles: "./tiles/light_from_wall/{z}/{x}/{y}.png"
+  // Bump the version string when you republish raster tiles
+  viewshedTiles: "./tiles/viewshed/{z}/{x}/{y}.png?v=20260321d",
+  lightTiles: "./tiles/light_from_wall/{z}/{x}/{y}.png?v=20260321d"
 };
 
 const state = {
@@ -29,9 +30,7 @@ const map = new maplibregl.Map({
     sources: {
       osm: {
         type: "raster",
-        tiles: [
-          "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        ],
+        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
         tileSize: 256,
         attribution: "© OpenStreetMap contributors"
       },
@@ -76,13 +75,12 @@ const map = new maplibregl.Map({
         type: "raster",
         source: "osm"
       },
-
       {
         id: "viewshed",
         type: "raster",
         source: "viewshed",
         paint: {
-          "raster-opacity": 0.55
+          "raster-opacity": 0.45
         }
       },
       {
@@ -90,7 +88,7 @@ const map = new maplibregl.Map({
         type: "raster",
         source: "lightFromWall",
         paint: {
-          "raster-opacity": 1.00
+          "raster-opacity": 0.75
         },
         layout: {
           visibility: "none"
@@ -106,7 +104,6 @@ const map = new maplibregl.Map({
           "line-opacity": 0.85
         }
       },
-
       {
         id: "riparian-fill",
         type: "fill",
@@ -116,7 +113,6 @@ const map = new maplibregl.Map({
           "fill-opacity": 0.18
         }
       },
-
       {
         id: "riparian-outline",
         type: "line",
@@ -127,7 +123,6 @@ const map = new maplibregl.Map({
           "line-opacity": 0.65
         }
       },
-
       {
         id: "wall-line",
         type: "line",
@@ -144,7 +139,6 @@ const map = new maplibregl.Map({
           "line-width": 4
         }
       },
-
       {
         id: "wall-highlight",
         type: "line",
@@ -156,7 +150,6 @@ const map = new maplibregl.Map({
           "line-opacity": 0.9
         }
       },
-
       {
         id: "crossings-circle",
         type: "circle",
@@ -166,50 +159,6 @@ const map = new maplibregl.Map({
           "circle-color": "#111111",
           "circle-stroke-color": "#ffffff",
           "circle-stroke-width": 1.2
-        }
-      },
-      {
-        id: "poi-triangle-th",
-        type: "symbol",
-        source: "poi",
-        filter: ["==", ["get", "Type"], "TH"],
-        layout: {
-          "icon-image": "triangle-th",
-          "icon-size": 1,
-          "icon-allow-overlap": true
-        }
-      },
-      {
-        id: "poi-triangle-camp",
-        type: "symbol",
-        source: "poi",
-        filter: ["==", ["get", "Type"], "CAMP"],
-        layout: {
-          "icon-image": "triangle-camp",
-          "icon-size": 1,
-          "icon-allow-overlap": true
-        }
-      },
-      {
-        id: "poi-triangle-trib",
-        type: "symbol",
-        source: "poi",
-        filter: ["==", ["get", "Type"], "TRIB"],
-        layout: {
-          "icon-image": "triangle-trib",
-          "icon-size": 1,
-          "icon-allow-overlap": true
-        }
-      },
-      {
-        id: "poi-triangle-rafting",
-        type: "symbol",
-        source: "poi",
-        filter: ["==", ["get", "Type"], "RAFTING"],
-        layout: {
-          "icon-image": "triangle-rafting",
-          "icon-size": 1,
-          "icon-allow-overlap": true
         }
       }
     ]
@@ -243,7 +192,9 @@ function addPoiLayers() {
     { id: "poi-triangle-rafting", typeValue: "RAFTING", icon: "triangle-rafting" }
   ];
 
-  poiLayerDefs.forEach(def => {
+  poiLayerDefs.forEach((def) => {
+    if (map.getLayer(def.id)) return;
+
     map.addLayer({
       id: def.id,
       type: "symbol",
@@ -268,6 +219,8 @@ function addTriangleIcons() {
   };
 
   Object.entries(colors).forEach(([name, color]) => {
+    if (map.hasImage(name)) return;
+
     const size = 22;
     const canvas = document.createElement("canvas");
     canvas.width = size;
@@ -295,10 +248,7 @@ function addTriangleIcons() {
 }
 
 async function fitToWall() {
-  const src = map.getSource("wall");
-  if (!src) return;
-
-  const data = await fetch(CONFIG.data.wall).then(r => r.json());
+  const data = await fetch(CONFIG.data.wall).then((r) => r.json());
   const bbox = getGeoJSONBounds(data);
 
   if (bbox) {
@@ -314,6 +264,10 @@ function wireUi() {
 
   document.getElementById("viewshedOpacity").addEventListener("input", (e) => {
     map.setPaintProperty("viewshed", "raster-opacity", Number(e.target.value));
+  });
+
+  document.getElementById("lightOpacity").addEventListener("input", (e) => {
+    map.setPaintProperty("light-from-wall", "raster-opacity", Number(e.target.value));
   });
 
   document.getElementById("toggleWatersheds").addEventListener("change", (e) => {
@@ -332,7 +286,7 @@ function wireUi() {
 
   document.getElementById("togglePOI").addEventListener("change", (e) => {
     ["poi-triangle-poi", "poi-triangle-th", "poi-triangle-camp", "poi-triangle-trib", "poi-triangle-rafting"]
-      .forEach(id => setLayerVisibility(id, e.target.checked));
+      .forEach((id) => setLayerVisibility(id, e.target.checked));
   });
 
   document.getElementById("toggleCrossings").addEventListener("change", (e) => {
@@ -344,7 +298,7 @@ function wireUi() {
   });
 
   document.getElementById("toggleLightFromWall").addEventListener("change", (e) => {
-  setLayerVisibility("light-from-wall", e.target.checked);
+    setLayerVisibility("light-from-wall", e.target.checked);
   });
 
   document.getElementById("filterVisiblePOI").addEventListener("change", (e) => {
@@ -375,7 +329,7 @@ function addInteractions() {
 
     new maplibregl.Popup()
       .setLngLat(e.lngLat)
-      .setHTML(`<strong>Potential crossing</strong><br>Potential wildlife crossing blocked by wall.`)
+      .setHTML("<strong>Potential crossing</strong><br>Potential wildlife crossing blocked by wall.")
       .addTo(map);
   });
 
@@ -387,7 +341,7 @@ function addInteractions() {
     "poi-triangle-rafting"
   ];
 
-  poiLayers.forEach(layerId => {
+  poiLayers.forEach((layerId) => {
     map.on("click", layerId, (e) => {
       const f = e.features?.[0];
       if (!f) return;
@@ -491,7 +445,7 @@ function buildSegmentNarrative(properties) {
   else if (rip === "low") parts.push("Riparian habitat sensitivity is relatively low here.");
 
   if (!parts.length) {
-    return "Use the map context, watershed boundaries, crossings, POIs, and viewshed overlay to evaluate this segment.";
+    return "Use the map context, watershed boundaries, crossings, POIs, and raster overlays to evaluate this segment.";
   }
 
   return parts.join(" ");
@@ -511,32 +465,21 @@ function updateWallColoring() {
 }
 
 function applyPoiFilter(visibleOnly) {
-  const filter = visibleOnly
-    ? ["==", ["to-number", ["coalesce", ["get", "wall_visible"], 0]], 1]
-    : null;
-
   ["poi-triangle-poi", "poi-triangle-th", "poi-triangle-camp", "poi-triangle-trib", "poi-triangle-rafting"]
-    .forEach(layerId => {
-      if (filter) {
-        const typeCode = layerId.replace("poi-triangle-", "").toUpperCase();
-        const mappedType = typeCode === "TH" ? "TH"
-          : typeCode === "CAMP" ? "CAMP"
-          : typeCode === "TRIB" ? "TRIB"
-          : typeCode === "RAFTING" ? "RAFTING"
-          : "POI";
+    .forEach((layerId) => {
+      const mappedType = layerId === "poi-triangle-th" ? "TH"
+        : layerId === "poi-triangle-camp" ? "CAMP"
+        : layerId === "poi-triangle-trib" ? "TRIB"
+        : layerId === "poi-triangle-rafting" ? "RAFTING"
+        : "POI";
 
+      if (visibleOnly) {
         map.setFilter(layerId, [
           "all",
           ["==", ["get", "Type"], mappedType],
           ["==", ["to-number", ["coalesce", ["get", "wall_visible"], 0]], 1]
         ]);
       } else {
-        const mappedType = layerId === "poi-triangle-th" ? "TH"
-          : layerId === "poi-triangle-camp" ? "CAMP"
-          : layerId === "poi-triangle-trib" ? "TRIB"
-          : layerId === "poi-triangle-rafting" ? "RAFTING"
-          : "POI";
-
         map.setFilter(layerId, ["==", ["get", "Type"], mappedType]);
       }
     });
@@ -545,20 +488,20 @@ function applyPoiFilter(visibleOnly) {
 }
 
 async function updatePoiSummary() {
-  const data = await fetch(CONFIG.data.poi).then(r => r.json());
+  const data = await fetch(CONFIG.data.poi).then((r) => r.json());
   const visibleOnly = document.getElementById("filterVisiblePOI").checked;
 
   let features = data.features || [];
   if (visibleOnly) {
-    features = features.filter(f => toNumber(f.properties?.wall_visible) === 1);
+    features = features.filter((f) => toNumber(f.properties?.wall_visible) === 1);
   }
 
   const total = features.length;
-  const visibleCount = features.filter(f => toNumber(f.properties?.wall_visible) === 1).length;
+  const visibleCount = features.filter((f) => toNumber(f.properties?.wall_visible) === 1).length;
   const avgViewshed = average(
     features
-      .map(f => toNumber(f.properties?.viewshed_mosaic))
-      .filter(v => !isNaN(v))
+      .map((f) => toNumber(f.properties?.viewshed_mosaic))
+      .filter((v) => !isNaN(v))
   );
 
   document.getElementById("poiSummary").innerHTML = `
@@ -573,7 +516,7 @@ function handleSegmentSearch(e) {
   if (!q) return;
 
   const features = map.querySourceFeatures("wall");
-  const match = features.find(f => {
+  const match = features.find((f) => {
     const id = String(f.properties?.ID ?? "").toLowerCase();
     const ws = String(f.properties?.Name_Watershed ?? "").toLowerCase();
     return id.includes(q) || ws.includes(q);
@@ -590,10 +533,14 @@ function setLayerVisibility(layerId, visible) {
 }
 
 function getGeoJSONBounds(geojson) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
   function visitCoords(coords) {
     if (!Array.isArray(coords)) return;
+
     if (typeof coords[0] === "number" && typeof coords[1] === "number") {
       minX = Math.min(minX, coords[0]);
       minY = Math.min(minY, coords[1]);
@@ -644,6 +591,6 @@ function escapeHtml(value) {
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
+    .replaceAll("\"", "&quot;")
     .replaceAll("'", "&#039;");
 }

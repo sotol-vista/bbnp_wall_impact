@@ -8,7 +8,8 @@
   --radius: 14px;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   font-family: Inter, system-ui, Arial, sans-serif;
@@ -172,9 +173,17 @@ input[type="range"] {
   display: inline-block;
 }
 
-.swatch-low { background: #f1c40f; }
-.swatch-med { background: #e67e22; }
-.swatch-high { background: #c0392b; }
+.swatch-low {
+  background: #f1c40f;
+}
+
+.swatch-med {
+  background: #e67e22;
+}
+
+.swatch-high {
+  background: #c0392b;
+}
 
 .poi-symbol {
   width: 0;
@@ -186,11 +195,41 @@ input[type="range"] {
   display: inline-block;
 }
 
-.poi-poi { border-bottom-color: navy; }
-.poi-th { border-bottom-color: forestgreen; }
-.poi-camp { border-bottom-color: orange; }
-.poi-trib { border-bottom-color: deepskyblue; }
-.poi-rafting { border-bottom-color: mediumspringgreen; }
+.poi-poi {
+  border-bottom-color: navy;
+}
+
+.poi-th {
+  border-bottom-color: forestgreen;
+}
+
+.poi-camp {
+  border-bottom-color: orange;
+}
+
+.poi-trib {
+  border-bottom-color: deepskyblue;
+}
+
+.poi-rafting {
+  border-bottom-color: mediumspringgreen;
+}
+
+.raster-swatch {
+  width: 28px;
+  height: 12px;
+  border-radius: 999px;
+  display: inline-block;
+  border: 1px solid #ccc;
+}
+
+.raster-viewshed {
+  background: linear-gradient(to right, #50f5eb, #1ec8ff, #ff1493);
+}
+
+.raster-light {
+  background: linear-gradient(to right, #fff000, #9bc3f5, #0a1450);
+}
 
 .maplibregl-popup-content {
   border-radius: 12px;
@@ -218,19 +257,4 @@ input[type="range"] {
   #map {
     min-height: 60vh;
   }
-}
-.raster-swatch {
-  width: 28px;
-  height: 12px;
-  border-radius: 999px;
-  display: inline-block;
-  border: 1px solid #ccc;
-}
-
-.raster-viewshed {
-  background: linear-gradient(to right, #fdbb84, #ef6548, #990000);
-}
-
-.raster-light {
-  background: linear-gradient(to right, #0a1450, #4f8dd8, #fff000);
 }
