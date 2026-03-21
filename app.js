@@ -90,7 +90,7 @@ const map = new maplibregl.Map({
         type: "raster",
         source: "lightFromWall",
         paint: {
-          "raster-opacity": 0.45
+          "raster-opacity": 1.00
         },
         layout: {
           visibility: "none"
