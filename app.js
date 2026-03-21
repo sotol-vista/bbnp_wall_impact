@@ -343,6 +343,10 @@ function wireUi() {
     setLayerVisibility("viewshed", e.target.checked);
   });
 
+  document.getElementById("toggleLightFromWall").addEventListener("change", (e) => {
+  setLayerVisibility("light-from-wall", e.target.checked);
+  });
+
   document.getElementById("filterVisiblePOI").addEventListener("change", (e) => {
     applyPoiFilter(e.target.checked);
   });
