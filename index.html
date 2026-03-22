@@ -31,6 +31,15 @@
           </div>
 
           <div class="panel-section">
+            <label for="basemapSelect"><strong>Basemap</strong></label>
+            <select id="basemapSelect">
+              <option value="basemap-gray" selected>Grayscale terrain</option>
+              <option value="basemap-light">Light (OSM)</option>
+              <option value="basemap-dark">Dark</option>
+            </select>
+          </div>
+
+          <div class="panel-section">
             <strong>Quick filters</strong>
             <label class="checkrow">
               <input type="checkbox" id="filterVisiblePOI" />
@@ -117,7 +126,7 @@
               Visitor experience would be adversely impacted by wall visibility and light exposure. Watershed boundaries are shown
               in dark grey. Points of interest are colored by type. The viewshed overlay (aqua to pink) shows everywhere a
               standard 30-foot border wall would be visible. The light visible overlay (blue to yellow) shows the potential
-              3-mile light pollution from standard 5K-15K commercial bulbs.
+              3-mile light pollution from standard 5K-15K lumen commercial bulbs.
             </p>
           </div>
         </div>

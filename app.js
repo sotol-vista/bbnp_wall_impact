@@ -29,12 +29,33 @@ const map = new maplibregl.Map({
     version: 8,
     glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
     sources: {
-      osm: {
+      basemapLight: {
         type: "raster",
-        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+        tiles: [
+          "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        ],
         tileSize: 256,
         attribution: "© OpenStreetMap contributors"
       },
+
+      basemapGray: {
+        type: "raster",
+        tiles: [
+          "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png"
+        ],
+        tileSize: 256,
+        attribution: "© Stadia Maps © OpenMapTiles © OpenStreetMap contributors"
+      },
+
+      basemapDark: {
+        type: "raster",
+        tiles: [
+          "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png"
+        ],
+        tileSize: 256,
+        attribution: "© Stadia Maps © OpenMapTiles © OpenStreetMap contributors"
+      },
+
       wall: {
         type: "geojson",
         data: CONFIG.data.wall
@@ -72,10 +93,24 @@ const map = new maplibregl.Map({
     },
     layers: [
       {
-        id: "osm",
+      id: "basemap-light",
         type: "raster",
-        source: "osm"
+        source: "basemapLight",
+        layout: { visibility: "none" }
       },
+      {
+        id: "basemap-gray",
+        type: "raster",
+        source: "basemapGray",
+        layout: { visibility: "visible" } // DEFAULT
+      },
+      {
+        id: "basemap-dark",
+        type: "raster",
+        source: "basemapDark",
+        layout: { visibility: "none" }
+      },
+
       {
         id: "viewshed",
         type: "raster",
@@ -336,6 +371,14 @@ function wireUi() {
 
   document.getElementById("filterVisiblePOI").addEventListener("change", (e) => {
     applyPoiFilter(e.target.checked);
+  });
+
+  document.getElementById("basemapSelect").addEventListener("change", (e) => {
+    const selected = e.target.value;
+
+    ["basemap-light", "basemap-gray", "basemap-dark"].forEach(id => {
+      setLayerVisibility(id, id === selected);
+    });
   });
 }
 
