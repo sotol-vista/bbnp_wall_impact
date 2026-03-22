@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3ff382c-7246-4a96-a0ce-6a52fda94b92" name="Changes" comment="basemap updates1">
+    <list default="true" id="f3ff382c-7246-4a96-a0ce-6a52fda94b92" name="Changes" comment="basemap updates2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -243,7 +242,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774219015958</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="basemap updates2">
+      <option name="closed" value="true" />
+      <created>1774221226876</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1774221226876</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -257,6 +264,7 @@
     <MESSAGE value="mobile updates" />
     <MESSAGE value="basemap updates" />
     <MESSAGE value="basemap updates1" />
-    <option name="LAST_COMMIT_MESSAGE" value="basemap updates1" />
+    <MESSAGE value="basemap updates2" />
+    <option name="LAST_COMMIT_MESSAGE" value="basemap updates2" />
   </component>
 </project>
