@@ -106,6 +106,32 @@ const map = new maplibregl.Map({
         }
       },
       {
+        id: "watersheds-label",
+        type: "symbol",
+        source: "watersheds",
+        minzoom: 11,
+        layout: {
+          "text-field": [
+            "coalesce",
+            ["get", "Name_Watershed"],
+            ["get", "Join_Label"],
+            ""
+          ],
+          "text-size": [
+            "interpolate", ["linear"], ["zoom"],
+            11, 11,
+            14, 14
+          ],
+          "text-font": ["Noto Sans Regular"],
+          "text-allow-overlap": false
+        },
+        paint: {
+          "text-color": "#4c4c4c",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.25
+        }
+      },
+      {
         id: "riparian-fill",
         type: "fill",
         source: "riparian",
@@ -273,6 +299,7 @@ function wireUi() {
 
   document.getElementById("toggleWatersheds").addEventListener("change", (e) => {
     setLayerVisibility("watersheds-line", e.target.checked);
+    setLayerVisibility("watersheds-label", e.target.checked)
   });
 
   document.getElementById("toggleRiparian").addEventListener("change", (e) => {
@@ -306,7 +333,10 @@ function wireUi() {
     applyPoiFilter(e.target.checked);
   });
 
-  document.getElementById("segmentSearch").addEventListener("input", handleSegmentSearch);
+  const segmentSearch = document.getElementById("segmentSearch");
+  if (segmentSearch) {
+    segmentSearch.addEventListener("input", handleSegmentSearch);
+  }
 }
 
 function addInteractions() {
