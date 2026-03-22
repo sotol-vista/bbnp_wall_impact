@@ -41,19 +41,25 @@ const map = new maplibregl.Map({
       basemapGray: {
         type: "raster",
         tiles: [
-          "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+          "https://d.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
         ],
         tileSize: 256,
-        attribution: "© Stadia Maps © OpenMapTiles © OpenStreetMap contributors"
+        attribution: "© OpenStreetMap contributors © CARTO"
       },
 
       basemapDark: {
         type: "raster",
         tiles: [
-          "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+          "https://d.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"
         ],
         tileSize: 256,
-        attribution: "© Stadia Maps © OpenMapTiles © OpenStreetMap contributors"
+        attribution: "© OpenStreetMap contributors © CARTO"
       },
 
       wall: {
