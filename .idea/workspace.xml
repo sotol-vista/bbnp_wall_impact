@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3ff382c-7246-4a96-a0ce-6a52fda94b92" name="Changes" comment="transparency updated">
+    <list default="true" id="f3ff382c-7246-4a96-a0ce-6a52fda94b92" name="Changes" comment="assumptions updated">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -178,7 +177,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774196398482</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="assumptions updated">
+      <option name="closed" value="true" />
+      <created>1774198179330</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1774198179330</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -187,6 +194,7 @@
     <MESSAGE value="code imports" />
     <MESSAGE value="light tile updates" />
     <MESSAGE value="transparency updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="transparency updated" />
+    <MESSAGE value="assumptions updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="assumptions updated" />
   </component>
 </project>
