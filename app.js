@@ -1,627 +1,349 @@
-const TILE_BUST = Date.now().toString();
+from pathlib import Path
+import subprocess
+import shutil
+import sys
 
-const CONFIG = {
-  center: [-103.31388, 29.21967],
-  zoom: 11,
-  maxZoom: 17,
-  minZoom: 8,
 
-  data: {
-    wall: "./data/wall_proposed.geojson",
-    riparian: "./data/riparian_corridor.geojson",
-    poi: "./data/points_of_interest.geojson",
-    crossings: "./data/potential_crossings.geojson",
-    watersheds: "./data/watersheds_adjacent.geojson"
-  },
+# =========================================================
+# PATH SETTINGS
+# =========================================================
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data" / "DEM"
+TEMP_DIR = BASE_DIR / "build"
+VIEWER_TILE_DIR = BASE_DIR / "viewer_docs" / "tiles"
 
-  viewshedTiles: `./tiles/viewshed/{z}/{x}/{y}.png?v=${TILE_BUST}`,
-  lightTiles: `./tiles/light_from_wall/{z}/{x}/{y}.png?v=${TILE_BUST}`
-};
+# Input rasters
+VIEWSHED_INPUT = DATA_DIR / "viewshed_mosaic_reduced.tif"
+LIGHT_INPUT = DATA_DIR / "light_from_wall.tif"
 
-const state = {
-  rankField: "RO_Rank",
-  selectedWallId: null
-};
+# Zoom settings
+MIN_ZOOM = 10
+MAX_ZOOM = 14
 
-const map = new maplibregl.Map({
-  container: "map",
-  style: {
-    version: 8,
-    glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-    sources: {
-      osm: {
-        type: "raster",
-        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        attribution: "© OpenStreetMap contributors"
-      },
-      wall: {
-        type: "geojson",
-        data: CONFIG.data.wall
-      },
-      riparian: {
-        type: "geojson",
-        data: CONFIG.data.riparian
-      },
-      poi: {
-        type: "geojson",
-        data: CONFIG.data.poi
-      },
-      crossings: {
-        type: "geojson",
-        data: CONFIG.data.crossings
-      },
-      watersheds: {
-        type: "geojson",
-        data: CONFIG.data.watersheds
-      },
-      viewshed: {
-        type: "raster",
-        tiles: [CONFIG.viewshedTiles],
-        tileSize: 256,
-        minzoom: 10,
-        maxzoom: 14
-      },
-      lightFromWall: {
-        type: "raster",
-        tiles: [CONFIG.lightTiles],
-        tileSize: 256,
-        minzoom: 10,
-        maxzoom: 14
-      }
-    },
-    layers: [
-      {
-        id: "osm",
-        type: "raster",
-        source: "osm"
-      },
-      {
-        id: "viewshed",
-        type: "raster",
-        source: "viewshed",
-        paint: {
-          "raster-opacity": 0.45
-        }
-      },
-      {
-        id: "light-from-wall",
-        type: "raster",
-        source: "lightFromWall",
-        paint: {
-          "raster-opacity": 0.75
-        },
-        layout: {
-          visibility: "none"
-        }
-      },
-      {
-        id: "watersheds-line",
-        type: "line",
-        source: "watersheds",
-        paint: {
-          "line-color": "#4c4c4c",
-          "line-width": 2.2,
-          "line-opacity": 0.85
-        }
-      },
-      {
-        id: "watersheds-label",
-        type: "symbol",
-        source: "watersheds",
-        minzoom: 11,
-        layout: {
-          "text-field": [
-            "coalesce",
-            ["get", "Name_Watershed"],
-            ["get", "Join_Label"],
-            ""
-          ],
-          "text-size": [
-            "interpolate", ["linear"], ["zoom"],
-            11, 11,
-            14, 14
-          ],
-          "text-font": ["Noto Sans Regular"],
-          "text-allow-overlap": false
-        },
-        paint: {
-          "text-color": "#4c4c4c",
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.25
-        }
-      },
-      {
-        id: "riparian-fill",
-        type: "fill",
-        source: "riparian",
-        paint: {
-          "fill-color": "#77a879",
-          "fill-opacity": 0.18
-        }
-      },
-      {
-        id: "riparian-outline",
-        type: "line",
-        source: "riparian",
-        paint: {
-          "line-color": "#5d875e",
-          "line-width": 1.2,
-          "line-opacity": 0.65
-        }
-      },
-      {
-        id: "wall-line",
-        type: "line",
-        source: "wall",
-        paint: {
-          "line-color": [
-            "match",
-            ["downcase", ["to-string", ["coalesce", ["get", "RO_Rank"], ""]]],
-            "low", "#f1c40f",
-            "medium", "#e67e22",
-            "high", "#c0392b",
-            "#888888"
-          ],
-          "line-width": 4
-        }
-      },
-      {
-        id: "wall-highlight",
-        type: "line",
-        source: "wall",
-        filter: ["==", ["get", "ID"], "__none__"],
-        paint: {
-          "line-color": "#00e5ff",
-          "line-width": 8,
-          "line-opacity": 0.9
-        }
-      },
-      {
-        id: "crossings-circle",
-        type: "circle",
-        source: "crossings",
-        paint: {
-          "circle-radius": 5,
-          "circle-color": "#111111",
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1.2
-        }
-      }
+# =========================================================
+# SCALING SETTINGS
+# =========================================================
+# Leave as None to auto-detect.
+# If the viewshed is binary, you may prefer:
+# VIEWSHED_SCALE_MIN = 0
+# VIEWSHED_SCALE_MAX = 1
+VIEWSHED_SCALE_MIN = None
+VIEWSHED_SCALE_MAX = None
+
+# Light raster rules:
+# 0 should be bright yellow
+# 15754 should be darkest blue
+# 15755 and above should be transparent
+LIGHT_SCALE_MIN = 0
+LIGHT_SCALE_MAX = 15754
+LIGHT_TRANSPARENT_AT_OR_ABOVE = 15755
+
+# =========================================================
+# CLEANUP
+# =========================================================
+DELETE_TEMP_FILES = False
+
+
+def run_command(cmd: list[str], label: str) -> str:
+    print(f"\n--- {label} ---")
+    print(" ".join(str(c) for c in cmd))
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.stdout:
+        print(result.stdout)
+
+    if result.returncode != 0:
+        if result.stderr:
+            print(result.stderr)
+        raise RuntimeError(f"{label} failed with exit code {result.returncode}")
+
+    if result.stderr:
+        print(result.stderr)
+
+    return result.stdout
+
+
+def check_dependency(executable_name: str) -> None:
+    if shutil.which(executable_name) is None:
+        raise EnvironmentError(
+            f"Required executable not found in PATH: {executable_name}\n"
+            f"Make sure GDAL is installed and available in your active conda environment."
+        )
+
+
+def safe_delete_file(path: Path) -> None:
+    if path.exists():
+        path.unlink()
+
+
+def safe_delete_dir(path: Path) -> None:
+    if path.exists():
+        shutil.rmtree(path)
+
+
+def get_raster_min_max(src: Path) -> tuple[float, float]:
+    cmd = ["gdalinfo", "-mm", str(src)]
+    output = run_command(cmd, f"Computing raster min/max for {src.name}")
+
+    min_val = None
+    max_val = None
+
+    for line in output.splitlines():
+        line = line.strip()
+        if "Computed Min/Max=" in line:
+            part = line.split("Computed Min/Max=")[-1]
+            vals = part.split(",")
+            if len(vals) == 2:
+                min_val = float(vals[0])
+                max_val = float(vals[1])
+                break
+
+    if min_val is None or max_val is None:
+        raise RuntimeError(f"Could not parse raster min/max from gdalinfo output for {src.name}")
+
+    print(f"Detected raster min/max for {src.name}: {min_val}, {max_val}")
+    return min_val, max_val
+
+
+def reproject_to_3857(src: Path, dst: Path) -> None:
+    safe_delete_file(dst)
+
+    cmd = [
+        "gdalwarp",
+        "-t_srs", "EPSG:3857",
+        "-r", "near",
+        "-of", "GTiff",
+        str(src),
+        str(dst),
     ]
-  },
-  center: CONFIG.center,
-  zoom: CONFIG.zoom,
-  minZoom: CONFIG.minZoom,
-  maxZoom: CONFIG.maxZoom
-});
-
-map.addControl(new maplibregl.NavigationControl(), "top-right");
-
-map.on("load", async () => {
-  addTriangleIcons();
-  addPoiLayers();
-
-  wireUi();
-  await fitToWall();
-
-  updateWallColoring();
-  updatePoiSummary();
-  addInteractions();
-});
-
-function addPoiLayers() {
-  const poiLayerDefs = [
-    { id: "poi-triangle-poi", typeValue: "POI", icon: "triangle-poi" },
-    { id: "poi-triangle-th", typeValue: "TH", icon: "triangle-th" },
-    { id: "poi-triangle-camp", typeValue: "CAMP", icon: "triangle-camp" },
-    { id: "poi-triangle-trib", typeValue: "TRIB", icon: "triangle-trib" },
-    { id: "poi-triangle-rafting", typeValue: "RAFTING", icon: "triangle-rafting" }
-  ];
-
-  poiLayerDefs.forEach((def) => {
-    if (map.getLayer(def.id)) return;
-
-    map.addLayer({
-      id: def.id,
-      type: "symbol",
-      source: "poi",
-      filter: ["==", ["get", "Type"], def.typeValue],
-      layout: {
-        "icon-image": def.icon,
-        "icon-size": 1,
-        "icon-allow-overlap": true
-      }
-    });
-  });
-}
-
-function addTriangleIcons() {
-  const colors = {
-    "triangle-poi": "navy",
-    "triangle-th": "forestgreen",
-    "triangle-camp": "orange",
-    "triangle-trib": "deepskyblue",
-    "triangle-rafting": "mediumspringgreen"
-  };
-
-  Object.entries(colors).forEach(([name, color]) => {
-    if (map.hasImage(name)) return;
-
-    const size = 22;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-
-    ctx.beginPath();
-    ctx.moveTo(size / 2, 2);
-    ctx.lineTo(size - 2, size - 2);
-    ctx.lineTo(2, size - 2);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#ffffff";
-    ctx.stroke();
-
-    const imageData = ctx.getImageData(0, 0, size, size);
-    map.addImage(name, {
-      width: size,
-      height: size,
-      data: imageData.data
-    });
-  });
-}
-
-async function fitToWall() {
-  const data = await fetch(CONFIG.data.wall).then((r) => r.json());
-  const bbox = getGeoJSONBounds(data);
-
-  if (bbox) {
-    map.fitBounds(bbox, { padding: 40, duration: 0 });
-  }
-}
-
-function wireUi() {
-  document.getElementById("rankField").addEventListener("change", (e) => {
-    state.rankField = e.target.value;
-    updateWallColoring();
-  });
-
-  document.getElementById("viewshedOpacity").addEventListener("input", (e) => {
-    map.setPaintProperty("viewshed", "raster-opacity", Number(e.target.value));
-  });
-
-  document.getElementById("lightOpacity").addEventListener("input", (e) => {
-    map.setPaintProperty("light-from-wall", "raster-opacity", Number(e.target.value));
-  });
-
-  document.getElementById("toggleWatersheds").addEventListener("change", (e) => {
-    setLayerVisibility("watersheds-line", e.target.checked);
-    setLayerVisibility("watersheds-label", e.target.checked)
-  });
-
-  document.getElementById("toggleRiparian").addEventListener("change", (e) => {
-    setLayerVisibility("riparian-fill", e.target.checked);
-    setLayerVisibility("riparian-outline", e.target.checked);
-  });
-
-  document.getElementById("toggleWall").addEventListener("change", (e) => {
-    setLayerVisibility("wall-line", e.target.checked);
-    setLayerVisibility("wall-highlight", e.target.checked);
-  });
-
-  document.getElementById("togglePOI").addEventListener("change", (e) => {
-    ["poi-triangle-poi", "poi-triangle-th", "poi-triangle-camp", "poi-triangle-trib", "poi-triangle-rafting"]
-      .forEach((id) => setLayerVisibility(id, e.target.checked));
-  });
-
-  document.getElementById("toggleCrossings").addEventListener("change", (e) => {
-    setLayerVisibility("crossings-circle", e.target.checked);
-  });
-
-  document.getElementById("toggleViewshed").addEventListener("change", (e) => {
-    setLayerVisibility("viewshed", e.target.checked);
-  });
-
-  document.getElementById("toggleLightFromWall").addEventListener("change", (e) => {
-    setLayerVisibility("light-from-wall", e.target.checked);
-  });
-
-  document.getElementById("filterVisiblePOI").addEventListener("change", (e) => {
-    applyPoiFilter(e.target.checked);
-  });
-
-  const segmentSearch = document.getElementById("segmentSearch");
-  if (segmentSearch) {
-    segmentSearch.addEventListener("input", handleSegmentSearch);
-  }
-}
-
-function addInteractions() {
-  map.on("mouseenter", "wall-line", () => {
-    map.getCanvas().style.cursor = "pointer";
-  });
-
-  map.on("mouseleave", "wall-line", () => {
-    map.getCanvas().style.cursor = "";
-  });
-
-  map.on("click", "wall-line", (e) => {
-    const feature = e.features?.[0];
-    if (!feature) return;
-    selectWallFeature(feature);
-  });
-
-  map.on("click", "crossings-circle", (e) => {
-    const feature = e.features?.[0];
-    if (!feature) return;
-
-    new maplibregl.Popup()
-      .setLngLat(e.lngLat)
-      .setHTML("<strong>Potential crossing</strong><br>Potential wildlife crossing blocked by wall.")
-      .addTo(map);
-  });
-
-  const poiLayers = [
-    "poi-triangle-poi",
-    "poi-triangle-th",
-    "poi-triangle-camp",
-    "poi-triangle-trib",
-    "poi-triangle-rafting"
-  ];
-
-  poiLayers.forEach((layerId) => {
-    map.on("click", layerId, (e) => {
-      const f = e.features?.[0];
-      if (!f) return;
-
-      const p = f.properties;
-      const visible = toNumber(p.wall_visible) === 1 ? "Yes" : "No";
-      const views = valueOrDash(p.viewshed_mosaic);
-
-      new maplibregl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(`
-          <strong>${escapeHtml(valueOrDash(p.Name))}</strong><br>
-          Type: ${escapeHtml(valueOrDash(p.Type))}<br>
-          Wall visible: ${visible}<br>
-          Viewshed value: ${views}
-        `)
-        .addTo(map);
-    });
-
-    map.on("mouseenter", layerId, () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
-
-    map.on("mouseleave", layerId, () => {
-      map.getCanvas().style.cursor = "";
-    });
-  });
-}
-
-function selectWallFeature(feature) {
-  const p = feature.properties;
-  const wallId = p.ID;
-  state.selectedWallId = wallId;
-
-  map.setFilter("wall-highlight", ["==", ["get", "ID"], wallId]);
-
-  const featureBounds = getFeatureBounds(feature);
-  if (featureBounds) {
-    map.fitBounds(featureBounds, { padding: 80, duration: 500 });
-  }
-
-  const runoffRank = valueOrDash(p.RO_Rank);
-  const riparianRank = valueOrDash(p.Riparian_Rank);
-  const runoffAcFtYr = formatNumber(p.RO_acftyr);
-  const runoffIntensity = formatNumber(p.RO_acftyr_per_rivermile);
-  const riparianAc = formatNumber(p.Riparian_ac);
-
-  document.getElementById("impactCard").classList.remove("empty");
-  document.getElementById("impactCard").innerHTML = `
-    <div class="pill-row">
-      <span class="pill">Segment ${escapeHtml(valueOrDash(wallId))}</span>
-      <span class="pill">${escapeHtml(valueOrDash(p.Name_Watershed))}</span>
-    </div>
-
-    <div><strong>Connectivity</strong></div>
-    <div>Upstream: ${escapeHtml(valueOrDash(p.US_ID))}</div>
-    <div>Downstream: ${escapeHtml(valueOrDash(p.DS_ID))}</div>
-
-    <div class="metric-grid">
-      <div class="metric">
-        <div class="metric-label">Annual runoff</div>
-        <div class="metric-value">${runoffAcFtYr}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Runoff intensity</div>
-        <div class="metric-value">${runoffIntensity}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Runoff rank</div>
-        <div class="metric-value">${runoffRank}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Riparian acres</div>
-        <div class="metric-value">${riparianAc}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Riparian rank</div>
-        <div class="metric-value">${riparianRank}</div>
-      </div>
-    </div>
-
-    <p style="margin-top:12px;">
-      <strong>Interpretation:</strong>
-      ${buildSegmentNarrative(p)}
-    </p>
-  `;
-}
-
-function buildSegmentNarrative(properties) {
-  const ro = String(properties.RO_Rank ?? "").toLowerCase();
-  const rip = String(properties.Riparian_Rank ?? "").toLowerCase();
-
-  const parts = [];
-
-  if (ro === "high") parts.push("This segment ranks high for runoff-related erosion or flooding concerns.");
-  else if (ro === "medium") parts.push("This segment shows moderate runoff-related concern.");
-  else if (ro === "low") parts.push("This segment shows relatively low runoff-related concern.");
-
-  if (rip === "high") parts.push("Riparian habitat sensitivity is high here.");
-  else if (rip === "medium") parts.push("Riparian habitat sensitivity is moderate here.");
-  else if (rip === "low") parts.push("Riparian habitat sensitivity is relatively low here.");
-
-  if (!parts.length) {
-    return "Use the map context, watershed boundaries, crossings, POIs, and raster overlays to evaluate this segment.";
-  }
-
-  return parts.join(" ");
-}
-
-function updateWallColoring() {
-  const field = state.rankField;
-
-  map.setPaintProperty("wall-line", "line-color", [
-    "match",
-    ["downcase", ["to-string", ["coalesce", ["get", field], ""]]],
-    "low", "#f1c40f",
-    "medium", "#e67e22",
-    "high", "#c0392b",
-    "#888888"
-  ]);
-}
-
-function applyPoiFilter(visibleOnly) {
-  ["poi-triangle-poi", "poi-triangle-th", "poi-triangle-camp", "poi-triangle-trib", "poi-triangle-rafting"]
-    .forEach((layerId) => {
-      const mappedType = layerId === "poi-triangle-th" ? "TH"
-        : layerId === "poi-triangle-camp" ? "CAMP"
-        : layerId === "poi-triangle-trib" ? "TRIB"
-        : layerId === "poi-triangle-rafting" ? "RAFTING"
-        : "POI";
-
-      if (visibleOnly) {
-        map.setFilter(layerId, [
-          "all",
-          ["==", ["get", "Type"], mappedType],
-          ["==", ["to-number", ["coalesce", ["get", "wall_visible"], 0]], 1]
-        ]);
-      } else {
-        map.setFilter(layerId, ["==", ["get", "Type"], mappedType]);
-      }
-    });
-
-  updatePoiSummary();
-}
-
-async function updatePoiSummary() {
-  const data = await fetch(CONFIG.data.poi).then((r) => r.json());
-  const visibleOnly = document.getElementById("filterVisiblePOI").checked;
-
-  let features = data.features || [];
-  if (visibleOnly) {
-    features = features.filter((f) => toNumber(f.properties?.wall_visible) === 1);
-  }
-
-  const total = features.length;
-  const visibleCount = features.filter((f) => toNumber(f.properties?.wall_visible) === 1).length;
-  const avgViewshed = average(
-    features
-      .map((f) => toNumber(f.properties?.viewshed_mosaic))
-      .filter((v) => !isNaN(v))
-  );
-
-  document.getElementById("poiSummary").innerHTML = `
-    <div><strong>Total POIs shown:</strong> ${total}</div>
-    <div><strong>POIs with wall visible:</strong> ${visibleCount}</div>
-    <div><strong>Average viewshed value:</strong> ${isNaN(avgViewshed) ? "—" : avgViewshed.toFixed(2)}</div>
-  `;
-}
-
-function handleSegmentSearch(e) {
-  const q = e.target.value.trim().toLowerCase();
-  if (!q) return;
-
-  const features = map.querySourceFeatures("wall");
-  const match = features.find((f) => {
-    const id = String(f.properties?.ID ?? "").toLowerCase();
-    const ws = String(f.properties?.Name_Watershed ?? "").toLowerCase();
-    return id.includes(q) || ws.includes(q);
-  });
-
-  if (match) {
-    selectWallFeature(match);
-  }
-}
-
-function setLayerVisibility(layerId, visible) {
-  if (!map.getLayer(layerId)) return;
-  map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
-}
-
-function getGeoJSONBounds(geojson) {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-
-  function visitCoords(coords) {
-    if (!Array.isArray(coords)) return;
-
-    if (typeof coords[0] === "number" && typeof coords[1] === "number") {
-      minX = Math.min(minX, coords[0]);
-      minY = Math.min(minY, coords[1]);
-      maxX = Math.max(maxX, coords[0]);
-      maxY = Math.max(maxY, coords[1]);
-    } else {
-      coords.forEach(visitCoords);
-    }
-  }
-
-  for (const f of geojson.features || []) {
-    visitCoords(f.geometry?.coordinates);
-  }
-
-  if (!isFinite(minX)) return null;
-  return [[minX, minY], [maxX, maxY]];
-}
-
-function getFeatureBounds(feature) {
-  return getGeoJSONBounds({
-    type: "FeatureCollection",
-    features: [feature]
-  });
-}
-
-function toNumber(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : NaN;
-}
-
-function formatNumber(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-}
-
-function valueOrDash(v) {
-  return v === null || v === undefined || v === "" ? "—" : v;
-}
-
-function average(arr) {
-  if (!arr.length) return NaN;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll("\"", "&quot;")
-    .replaceAll("'", "&#039;");
-}
+    run_command(cmd, f"Reprojecting {src.name} to EPSG:3857")
+
+
+def convert_to_byte_raster(src: Path, dst: Path, scale_min: float, scale_max: float) -> None:
+    safe_delete_file(dst)
+
+    cmd = [
+        "gdal_translate",
+        "-of", "GTiff",
+        "-ot", "Byte",
+        "-scale", str(scale_min), str(scale_max), "0", "255",
+        str(src),
+        str(dst),
+    ]
+    run_command(cmd, f"Converting {src.name} to 8-bit GeoTIFF")
+
+
+def convert_light_to_byte_with_transparency(
+    src: Path,
+    dst: Path,
+    threshold: float,
+    max_valid_value: float
+) -> None:
+    """
+    Convert light raster directly to Byte while reserving 255 for transparent NoData.
+
+    Output mapping:
+    - 0 .. max_valid_value  -> 0 .. 254
+    - values >= threshold   -> 255 (NoData / transparent)
+    """
+    safe_delete_file(dst)
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "osgeo_utils.gdal_calc",
+        "-A", str(src),
+        "--calc", f"where(A>={threshold},255,round((A/{max_valid_value})*254))",
+        "--outfile", str(dst),
+        "--NoDataValue", "255",
+        "--type", "Byte",
+        "--format", "GTiff",
+        "--creation-option", "COMPRESS=LZW",
+        "--overwrite",
+    ]
+    run_command(cmd, f"Converting {src.name} to byte with transparency cutoff at {threshold}")
+
+
+def write_viewshed_color_ramp(dst: Path) -> None:
+    safe_delete_file(dst)
+
+    ramp_text = """\
+0   0 0 0 0
+1   0 255 255 140
+64  0 220 255 180
+128 120 120 255 220
+192 255 80 220 245
+255 255 0 160 255
+nv  0 0 0 0
+"""
+    dst.write_text(ramp_text, encoding="utf-8")
+    print(f"\n--- Writing viewshed color ramp ---")
+    print(f"Saved: {dst}")
+
+
+def write_light_color_ramp(dst: Path) -> None:
+    """
+    0 = bright yellow
+    254 = darkest blue
+    255 is reserved as NoData/transparent and is not included in the ramp
+    """
+    safe_delete_file(dst)
+
+    ramp_text = """\
+0   255 245 0 255
+32  250 235 110 250
+64  230 225 170 245
+96  190 215 220 235
+128 140 190 245 225
+160 95 155 240 215
+192 60 115 220 205
+224 35 70 170 195
+254 15 25 100 185
+nv  0 0 0 0
+"""
+    dst.write_text(ramp_text, encoding="utf-8")
+    print(f"\n--- Writing light color ramp ---")
+    print(f"Saved: {dst}")
+
+
+def apply_color_relief(src: Path, color_file: Path, dst: Path) -> None:
+    safe_delete_file(dst)
+
+    cmd = [
+        "gdaldem",
+        "color-relief",
+        str(src),
+        str(color_file),
+        str(dst),
+        "-alpha",
+    ]
+    run_command(cmd, f"Applying color relief to {src.name}")
+
+
+def build_xyz_tiles(src_color: Path, tile_dir: Path, min_zoom: int, max_zoom: int) -> None:
+    safe_delete_dir(tile_dir)
+    tile_dir.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "osgeo_utils.gdal2tiles",
+        "--xyz",
+        "--webviewer", "none",
+        "--no-kml",
+        "-z", f"{min_zoom}-{max_zoom}",
+        "--processes=1",
+        str(src_color),
+        str(tile_dir),
+    ]
+    run_command(cmd, f"Building XYZ tiles for {src_color.name}")
+
+
+def report_tile_count(tile_dir: Path) -> None:
+    png_tiles = list(tile_dir.rglob("*.png"))
+    tile_count = len(png_tiles)
+
+    print(f"\nPNG tile count in {tile_dir.name}: {tile_count}")
+    if tile_count > 0:
+        for p in png_tiles[:5]:
+            print(f"  {p}")
+
+
+def process_raster(
+    input_raster: Path,
+    layer_name: str,
+    scale_min: float | None,
+    scale_max: float | None,
+    ramp_writer,
+    transparent_at_or_above: float | None = None,
+) -> None:
+    if not input_raster.exists():
+        raise FileNotFoundError(f"Input raster not found: {input_raster}")
+
+    raster_3857 = TEMP_DIR / f"{layer_name}_3857.tif"
+    raster_byte = TEMP_DIR / f"{layer_name}_3857_byte.tif"
+    raster_color = TEMP_DIR / f"{layer_name}_3857_color.tif"
+    ramp_file = TEMP_DIR / f"{layer_name}_color_ramp.txt"
+    output_tile_dir = VIEWER_TILE_DIR / layer_name
+
+    safe_delete_file(raster_3857)
+    safe_delete_file(raster_byte)
+    safe_delete_file(raster_color)
+    safe_delete_file(ramp_file)
+
+    reproject_to_3857(input_raster, raster_3857)
+
+    if layer_name == "light_from_wall":
+        convert_light_to_byte_with_transparency(
+            raster_3857,
+            raster_byte,
+            threshold=LIGHT_TRANSPARENT_AT_OR_ABOVE,
+            max_valid_value=LIGHT_SCALE_MAX
+        )
+    else:
+        source_for_scaling = raster_3857
+
+        if scale_min is None or scale_max is None:
+            detected_min, detected_max = get_raster_min_max(source_for_scaling)
+            scale_min = detected_min if scale_min is None else scale_min
+            scale_max = detected_max if scale_max is None else scale_max
+
+        if scale_min == scale_max:
+            raise RuntimeError(
+                f"{layer_name}: raster min and max are the same ({scale_min}). "
+                f"Set scale values manually."
+            )
+
+        convert_to_byte_raster(source_for_scaling, raster_byte, scale_min, scale_max)
+
+    ramp_writer(ramp_file)
+    apply_color_relief(raster_byte, ramp_file, raster_color)
+    build_xyz_tiles(raster_color, output_tile_dir, MIN_ZOOM, MAX_ZOOM)
+    report_tile_count(output_tile_dir)
+
+    if DELETE_TEMP_FILES:
+        safe_delete_file(raster_3857)
+        safe_delete_file(raster_byte)
+        safe_delete_file(raster_color)
+        safe_delete_file(ramp_file)
+
+    print(f"\n✓ Finished tiles for {layer_name}: {output_tile_dir}")
+
+
+def main() -> None:
+    print(f"Current working directory: {Path.cwd()}")
+    print(f"Base dir: {BASE_DIR.resolve()}")
+    print(f"Data dir: {DATA_DIR.resolve()}")
+    print(f"Tile output dir: {VIEWER_TILE_DIR.resolve()}")
+
+    check_dependency("gdalwarp")
+    check_dependency("gdalinfo")
+    check_dependency("gdal_translate")
+    check_dependency("gdaldem")
+
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    VIEWER_TILE_DIR.mkdir(parents=True, exist_ok=True)
+
+    process_raster(
+        input_raster=VIEWSHED_INPUT,
+        layer_name="viewshed",
+        scale_min=VIEWSHED_SCALE_MIN,
+        scale_max=VIEWSHED_SCALE_MAX,
+        ramp_writer=write_viewshed_color_ramp,
+    )
+
+    process_raster(
+        input_raster=LIGHT_INPUT,
+        layer_name="light_from_wall",
+        scale_min=LIGHT_SCALE_MIN,
+        scale_max=LIGHT_SCALE_MAX,
+        ramp_writer=write_light_color_ramp,
+        transparent_at_or_above=LIGHT_TRANSPARENT_AT_OR_ABOVE,
+    )
+
+    print("\n✓ All raster tile builds complete.")
+
+
+if __name__ == "__main__":
+    main()
