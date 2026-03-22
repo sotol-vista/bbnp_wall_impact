@@ -11,17 +11,17 @@
 <body>
   <div id="app">
     <aside id="sidebar-left">
-      <details class="mobile-drawer" open>
+      <div class="panel-section static-header-panel">
+        <h1>Big Bend Region - Potential Impact of a Wall</h1>
+        <p class="subtle">
+          Explore proposed wall segments and their potential effects on flooding,
+          riparian habitat, crossings, visitor experience, wall visibility, and light exposure.
+        </p>
+      </div>
+
+      <details class="mobile-drawer">
         <summary class="mobile-drawer-toggle">Map layers, filters, and legend</summary>
         <div class="mobile-drawer-body">
-          <div class="panel-section">
-            <h1>Big Bend Region - Potential Impact of a Wall</h1>
-            <p class="subtle">
-              Explore proposed wall segments and their potential effects on flooding,
-              riparian habitat, crossings, visitor experience, wall visibility, and light exposure.
-            </p>
-          </div>
-
           <div class="panel-section">
             <label for="rankField"><strong>Segment coloring</strong></label>
             <select id="rankField">
@@ -91,7 +91,7 @@
     <main id="map"></main>
 
     <aside id="sidebar-right">
-      <details class="mobile-drawer info-drawer" open>
+      <details class="mobile-drawer info-drawer">
         <summary class="mobile-drawer-toggle">(Proposed) Wall Impact by Watershed Segment</summary>
         <div class="mobile-drawer-body">
           <div class="panel-section">
@@ -111,7 +111,7 @@
           <div class="panel-section">
             <h2>How to read this</h2>
             <p class="subtle">
-              The proposed wall is symbolized by a rank (High, Medium, Low) based on these Assumptions:
+              The proposed wall is symbolized by a rank (High, Medium, Low) based on these assumptions:
               Flooding assumes 15% of annual rainfall is runoff. Riparian habitat exists where shown at least seasonally.
               Crossings were estimated by desktop analysis considering slope, riparian cover, and historical crossing locations.
               Visitor experience would be adversely impacted by wall visibility and light exposure. Watershed boundaries are shown

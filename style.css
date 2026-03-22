@@ -59,6 +59,11 @@ body {
   box-shadow: var(--shadow);
 }
 
+.static-header-panel {
+  position: relative;
+  z-index: 21;
+}
+
 h1 {
   font-size: 1.35rem;
   margin: 0 0 8px 0;
@@ -313,6 +318,17 @@ input[type="range"] {
     bottom: 0;
   }
 
+  #sidebar-left .static-header-panel {
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(8px);
+    pointer-events: auto;
+  }
+
+  #sidebar-left .mobile-drawer {
+    pointer-events: auto;
+  }
+
   .mobile-drawer {
     pointer-events: auto;
   }
@@ -427,5 +443,13 @@ input[type="range"] {
   #sidebar-right {
     padding-left: 10px;
     padding-right: 10px;
+  }
+
+  #sidebar-left .static-header-panel {
+    padding: 12px;
+  }
+
+  #sidebar-left .static-header-panel h1 {
+    font-size: 1rem;
   }
 }
