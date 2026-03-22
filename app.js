@@ -41,10 +41,10 @@ const map = new maplibregl.Map({
       basemapGray: {
         type: "raster",
         tiles: [
-          "https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
-          "https://d.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
         ],
         tileSize: 256,
         attribution: "© OpenStreetMap contributors © CARTO"
@@ -53,10 +53,10 @@ const map = new maplibregl.Map({
       basemapDark: {
         type: "raster",
         tiles: [
-          "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-          "https://d.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
         ],
         tileSize: 256,
         attribution: "© OpenStreetMap contributors © CARTO"
@@ -102,13 +102,13 @@ const map = new maplibregl.Map({
       id: "basemap-light",
         type: "raster",
         source: "basemapLight",
-        layout: { visibility: "none" }
+        layout: { visibility: "visible" }
       },
       {
         id: "basemap-gray",
         type: "raster",
         source: "basemapGray",
-        layout: { visibility: "visible" } // DEFAULT
+        layout: { visibility: "none" } // DEFAULT
       },
       {
         id: "basemap-dark",
