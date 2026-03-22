@@ -428,11 +428,11 @@ function selectWallFeature(feature) {
 
     <div class="metric-grid">
       <div class="metric">
-        <div class="metric-label">Annual runoff</div>
+        <div class="metric-label">Annual runoff (ac-ft/yr)</div>
         <div class="metric-value">${runoffAcFtYr}</div>
       </div>
       <div class="metric">
-        <div class="metric-label">Runoff intensity</div>
+        <div class="metric-label">Runoff intensity (ac-ft/yr/mile)</div>
         <div class="metric-value">${runoffIntensity}</div>
       </div>
       <div class="metric">
