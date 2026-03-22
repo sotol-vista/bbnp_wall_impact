@@ -81,7 +81,7 @@ const map = new maplibregl.Map({
         type: "raster",
         source: "viewshed",
         paint: {
-          "raster-opacity": 0.45
+          "raster-opacity": 0.85
         }
       },
       {
@@ -89,10 +89,10 @@ const map = new maplibregl.Map({
         type: "raster",
         source: "lightFromWall",
         paint: {
-          "raster-opacity": 0.75
+          "raster-opacity": 0.85
         },
         layout: {
-          visibility: "none"
+          visibility: "visible"
         }
       },
       {
