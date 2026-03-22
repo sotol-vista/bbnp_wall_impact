@@ -6,6 +6,7 @@
   --muted: #666666;
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   --radius: 14px;
+  --drawer-shadow: 0 -10px 30px rgba(0, 0, 0, 0.16);
 }
 
 html,
@@ -15,6 +16,10 @@ body {
   font-family: Inter, system-ui, Arial, sans-serif;
   color: var(--text);
   background: var(--bg);
+}
+
+body {
+  overflow: hidden;
 }
 
 #app {
@@ -28,6 +33,7 @@ body {
   overflow-y: auto;
   background: #fbfaf7;
   padding: 18px;
+  min-width: 0;
 }
 
 #sidebar-left {
@@ -41,6 +47,7 @@ body {
 #map {
   position: relative;
   min-height: 100vh;
+  min-width: 0;
 }
 
 .panel-section {
@@ -55,6 +62,7 @@ body {
 h1 {
   font-size: 1.35rem;
   margin: 0 0 8px 0;
+  line-height: 1.2;
 }
 
 h2 {
@@ -76,16 +84,22 @@ label {
 .checkrow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 6px 0;
+  gap: 10px;
+  margin: 8px 0;
   color: var(--text);
+  min-height: 40px;
 }
 
-input[type="text"],
+.checkrow input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
 select {
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 0.95rem;
@@ -94,6 +108,7 @@ select {
 
 input[type="range"] {
   width: 100%;
+  min-height: 34px;
 }
 
 .impact-card,
@@ -228,13 +243,30 @@ input[type="range"] {
 }
 
 .raster-light {
-  background: linear-gradient(to right, #fff000, #9bc3f5, #0a1450);
+  background: linear-gradient(to right, #0a1450, #9bc3f5, #fff000);
 }
 
 .maplibregl-popup-content {
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 0.92rem;
+  max-width: 260px;
+}
+
+.mobile-drawer summary {
+  list-style: none;
+}
+
+.mobile-drawer summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobile-drawer-toggle {
+  display: none;
+}
+
+.mobile-drawer-body {
+  display: block;
 }
 
 @media (max-width: 1200px) {
@@ -244,17 +276,156 @@ input[type="range"] {
 }
 
 @media (max-width: 960px) {
+  body {
+    overflow: auto;
+  }
+
   #app {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 60vh auto auto;
+    display: block;
+    height: 100vh;
+    position: relative;
+  }
+
+  #map {
+    min-height: 100vh;
+    height: 100vh;
+    width: 100%;
   }
 
   #sidebar-left,
   #sidebar-right {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: 10px 12px;
+    background: transparent;
+    overflow: visible;
     border: none;
+    pointer-events: none;
   }
 
-  #map {
-    min-height: 60vh;
+  #sidebar-left {
+    top: 0;
+  }
+
+  #sidebar-right {
+    bottom: 0;
+  }
+
+  .mobile-drawer {
+    pointer-events: auto;
+  }
+
+  .mobile-drawer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+    font-weight: 700;
+    font-size: 0.98rem;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+
+  .mobile-drawer-toggle::after {
+    content: "▾";
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  .mobile-drawer[open] .mobile-drawer-toggle::after {
+    content: "▴";
+  }
+
+  .mobile-drawer-body {
+    margin-top: 10px;
+    max-height: min(56vh, 520px);
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  #sidebar-left .mobile-drawer-body {
+    padding-bottom: 4px;
+  }
+
+  #sidebar-right .mobile-drawer-body {
+    padding-top: 4px;
+  }
+
+  #sidebar-left .panel-section,
+  #sidebar-right .panel-section {
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(8px);
+  }
+
+  #sidebar-right .mobile-drawer-toggle {
+    box-shadow: var(--drawer-shadow);
+  }
+
+  .panel-section {
+    padding: 14px;
+  }
+
+  h1 {
+    font-size: 1.05rem;
+  }
+
+  h2 {
+    font-size: 0.98rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .legend-item {
+    align-items: center;
+  }
+
+  .maplibregl-ctrl-top-right {
+    top: 72px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .mobile-drawer-body {
+    max-height: min(62vh, 560px);
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric {
+    padding: 10px 12px;
+  }
+
+  .pill {
+    font-size: 0.8rem;
+  }
+
+  .subtle {
+    font-size: 0.92rem;
+  }
+
+  .checkrow {
+    min-height: 44px;
+  }
+
+  .mobile-drawer-toggle {
+    padding: 13px 14px;
+  }
+
+  #sidebar-left,
+  #sidebar-right {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }

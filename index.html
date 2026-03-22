@@ -11,107 +11,117 @@
 <body>
   <div id="app">
     <aside id="sidebar-left">
-      <div class="panel-section">
-        <h1>Big Bend Region - Potential Impact of a Wall</h1>
-        <p class="subtle">
-          Explore proposed wall segments and their potential effects on flooding,
-          riparian habitat, crossings, visitor experience, wall visibility, and light exposure.
-        </p>
-      </div>
+      <details class="mobile-drawer" open>
+        <summary class="mobile-drawer-toggle">Map layers, filters, and legend</summary>
+        <div class="mobile-drawer-body">
+          <div class="panel-section">
+            <h1>Big Bend Region - Potential Impact of a Wall</h1>
+            <p class="subtle">
+              Explore proposed wall segments and their potential effects on flooding,
+              riparian habitat, crossings, visitor experience, wall visibility, and light exposure.
+            </p>
+          </div>
 
-      <div class="panel-section">
-        <label for="rankField"><strong>Segment coloring</strong></label>
-        <select id="rankField">
-          <option value="RO_Rank" selected>Runoff / erosion-flooding rank</option>
-          <option value="Riparian_Rank">Riparian habitat rank</option>
-        </select>
-      </div>
+          <div class="panel-section">
+            <label for="rankField"><strong>Segment coloring</strong></label>
+            <select id="rankField">
+              <option value="RO_Rank" selected>Runoff / erosion-flooding rank</option>
+              <option value="Riparian_Rank">Riparian habitat rank</option>
+            </select>
+          </div>
 
-      <div class="panel-section">
-        <strong>Quick filters</strong>
-        <label class="checkrow">
-          <input type="checkbox" id="filterVisiblePOI" />
-          Only POIs where wall is visible
-        </label>
-      </div>
+          <div class="panel-section">
+            <strong>Quick filters</strong>
+            <label class="checkrow">
+              <input type="checkbox" id="filterVisiblePOI" />
+              Only POIs where wall is visible
+            </label>
+          </div>
 
-      <div class="panel-section">
-        <strong>Layers</strong>
-        <label class="checkrow"><input type="checkbox" id="toggleWatersheds" checked /> Watershed boundaries</label>
-        <label class="checkrow"><input type="checkbox" id="toggleRiparian" checked /> Riparian corridor</label>
-        <label class="checkrow"><input type="checkbox" id="toggleWall" checked /> Proposed wall</label>
-        <label class="checkrow"><input type="checkbox" id="togglePOI" checked /> Points of interest</label>
-        <label class="checkrow"><input type="checkbox" id="toggleCrossings" checked /> Potential crossings</label>
-        <label class="checkrow"><input type="checkbox" id="toggleViewshed" checked /> Viewshed raster</label>
-        <label class="checkrow"><input type="checkbox" id="toggleLightFromWall" checked /> Light from wall</label>
-      </div>
+          <div class="panel-section">
+            <strong>Layers</strong>
+            <label class="checkrow"><input type="checkbox" id="toggleWatersheds" checked /> Watershed boundaries</label>
+            <label class="checkrow"><input type="checkbox" id="toggleRiparian" checked /> Riparian corridor</label>
+            <label class="checkrow"><input type="checkbox" id="toggleWall" checked /> Proposed wall</label>
+            <label class="checkrow"><input type="checkbox" id="togglePOI" checked /> Points of interest</label>
+            <label class="checkrow"><input type="checkbox" id="toggleCrossings" checked /> Potential crossings</label>
+            <label class="checkrow"><input type="checkbox" id="toggleViewshed" checked /> Viewshed raster</label>
+            <label class="checkrow"><input type="checkbox" id="toggleLightFromWall" checked /> Light from wall</label>
+          </div>
 
-      <div class="panel-section">
-        <label for="viewshedOpacity"><strong>Viewshed opacity</strong></label>
-        <input id="viewshedOpacity" type="range" min="0" max="1" step="0.05" value="0.85" />
-      </div>
+          <div class="panel-section">
+            <label for="viewshedOpacity"><strong>Viewshed opacity</strong></label>
+            <input id="viewshedOpacity" type="range" min="0" max="1" step="0.05" value="0.85" />
+          </div>
 
-      <div class="panel-section">
-        <label for="lightOpacity"><strong>Light layer opacity</strong></label>
-        <input id="lightOpacity" type="range" min="0" max="1" step="0.05" value="0.85" />
-      </div>
+          <div class="panel-section">
+            <label for="lightOpacity"><strong>Light layer opacity</strong></label>
+            <input id="lightOpacity" type="range" min="0" max="1" step="0.05" value="0.85" />
+          </div>
 
-      <div class="panel-section">
-        <strong>Legend</strong>
+          <div class="panel-section">
+            <strong>Legend</strong>
 
-        <div class="legend-group">
-          <div class="legend-title">Wall segment rank</div>
-          <div class="legend-item"><span class="swatch swatch-low"></span> Low</div>
-          <div class="legend-item"><span class="swatch swatch-med"></span> Medium</div>
-          <div class="legend-item"><span class="swatch swatch-high"></span> High</div>
+            <div class="legend-group">
+              <div class="legend-title">Wall segment rank</div>
+              <div class="legend-item"><span class="swatch swatch-low"></span> Low</div>
+              <div class="legend-item"><span class="swatch swatch-med"></span> Medium</div>
+              <div class="legend-item"><span class="swatch swatch-high"></span> High</div>
+            </div>
+
+            <div class="legend-group">
+              <div class="legend-title">POI type</div>
+              <div class="legend-item"><span class="poi-symbol poi-poi"></span> POI</div>
+              <div class="legend-item"><span class="poi-symbol poi-th"></span> TH</div>
+              <div class="legend-item"><span class="poi-symbol poi-camp"></span> CAMP</div>
+              <div class="legend-item"><span class="poi-symbol poi-trib"></span> TRIB</div>
+              <div class="legend-item"><span class="poi-symbol poi-rafting"></span> RAFTING</div>
+            </div>
+
+            <div class="legend-group">
+              <div class="legend-title">Raster overlays</div>
+              <div class="legend-item"><span class="raster-swatch raster-viewshed"></span> Viewshed (aqua to pink)</div>
+              <div class="legend-item"><span class="raster-swatch raster-light"></span> Light from wall (blue to yellow)</div>
+            </div>
+          </div>
         </div>
-
-        <div class="legend-group">
-          <div class="legend-title">POI type</div>
-          <div class="legend-item"><span class="poi-symbol poi-poi"></span> POI</div>
-          <div class="legend-item"><span class="poi-symbol poi-th"></span> TH</div>
-          <div class="legend-item"><span class="poi-symbol poi-camp"></span> CAMP</div>
-          <div class="legend-item"><span class="poi-symbol poi-trib"></span> TRIB</div>
-          <div class="legend-item"><span class="poi-symbol poi-rafting"></span> RAFTING</div>
-        </div>
-
-        <div class="legend-group">
-          <div class="legend-title">Raster overlays</div>
-          <div class="legend-item"><span class="raster-swatch raster-viewshed"></span> Viewshed (orange to red)</div>
-          <div class="legend-item"><span class="raster-swatch raster-light"></span> Light from wall (dark blue to yellow)</div>
-        </div>
-      </div>
+      </details>
     </aside>
 
     <main id="map"></main>
 
     <aside id="sidebar-right">
-      <div class="panel-section">
-        <h2>(Proposed) Wall Impact by Watershed Segment</h2>
-        <div id="impactCard" class="impact-card empty">
-          Click a wall segment to inspect its attributes.
-        </div>
-      </div>
+      <details class="mobile-drawer info-drawer" open>
+        <summary class="mobile-drawer-toggle">(Proposed) Wall Impact by Watershed Segment</summary>
+        <div class="mobile-drawer-body">
+          <div class="panel-section">
+            <h2>(Proposed) Wall Impact by Watershed Segment</h2>
+            <div id="impactCard" class="impact-card empty">
+              Click a wall segment to inspect its attributes.
+            </div>
+          </div>
 
-      <div class="panel-section">
-        <h2>POI Summary</h2>
-        <div id="poiSummary" class="summary-box">
-          Loading…
-        </div>
-      </div>
+          <div class="panel-section">
+            <h2>POI Summary</h2>
+            <div id="poiSummary" class="summary-box">
+              Loading…
+            </div>
+          </div>
 
-      <div class="panel-section">
-        <h2>How to read this</h2>
-        <p class="subtle">
-            The proposed wall is symbolized by a rank (High, Medium, Low) based on these Assumptions: Flooding assumes
-            15% of annual rainfall is runoff. Riparian habitat exists where shown at least seasonally.
-            Crossings were estimated by desktop analysis considering slope, riparian cover, and historical crossing locations.
-            Visitor experience would be adversely impacted by wall visibility and light exposure. Watershed boundaries are shown
-            in dark grey. Points of interest are colored by type. The viewshed overlay (aqua to pink) shows everywhere a
-            standard 30-foot border wall would be visible. The light visible overlay (blue to yellow) shows the potential
-            3-mile light pollution from standard 5K-15K commercial bulbs.
-        </p>
-      </div>
+          <div class="panel-section">
+            <h2>How to read this</h2>
+            <p class="subtle">
+              The proposed wall is symbolized by a rank (High, Medium, Low) based on these Assumptions:
+              Flooding assumes 15% of annual rainfall is runoff. Riparian habitat exists where shown at least seasonally.
+              Crossings were estimated by desktop analysis considering slope, riparian cover, and historical crossing locations.
+              Visitor experience would be adversely impacted by wall visibility and light exposure. Watershed boundaries are shown
+              in dark grey. Points of interest are colored by type. The viewshed overlay (aqua to pink) shows everywhere a
+              standard 30-foot border wall would be visible. The light visible overlay (blue to yellow) shows the potential
+              3-mile light pollution from standard 5K-15K commercial bulbs.
+            </p>
+          </div>
+        </div>
+      </details>
     </aside>
   </div>
 

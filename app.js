@@ -196,6 +196,11 @@ const map = new maplibregl.Map({
   maxZoom: CONFIG.maxZoom
 });
 
+// Disable rotation for better mobile usability
+map.dragRotate.disable();
+map.touchZoomRotate.disableRotation();
+map.scrollZoom.setWheelZoomRate(1 / 450);
+
 map.addControl(new maplibregl.NavigationControl(), "top-right");
 
 map.on("load", async () => {
