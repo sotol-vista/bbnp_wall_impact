@@ -19,7 +19,7 @@
         </p>
       </div>
 
-      <details class="mobile-drawer">
+      <details class="mobile-drawer" open>
         <summary class="mobile-drawer-toggle">Map layers, filters, and legend</summary>
         <div class="mobile-drawer-body">
           <div class="panel-section">
@@ -91,7 +91,7 @@
     <main id="map"></main>
 
     <aside id="sidebar-right">
-      <details class="mobile-drawer info-drawer">
+      <details class="mobile-drawer info-drawer" open>
         <summary class="mobile-drawer-toggle">(Proposed) Wall Impact by Watershed Segment</summary>
         <div class="mobile-drawer-body">
           <div class="panel-section">
@@ -127,5 +127,15 @@
 
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="./app.js"></script>
+  <script>
+    (function () {
+      const isMobile = window.matchMedia("(max-width: 960px)").matches;
+      if (isMobile) {
+        document.querySelectorAll(".mobile-drawer").forEach((el) => {
+          el.removeAttribute("open");
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
